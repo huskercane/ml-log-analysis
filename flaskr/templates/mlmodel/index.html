@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<h1>{% block title %}Analyze Logs{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<form action="/train" enctype="multipart/form-data" method="post">
+    <input type="file" id="train_file" name="train_file">
+    <input type="submit">
+</form>
+<form action="/evaluate" enctype="multipart/form-data" method="post">
+    <input type="file" id="evaluate_file" name="evaluate_file">
+    <input type="submit">
+</form>
+{% endblock %}
