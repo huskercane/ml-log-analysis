@@ -2,7 +2,7 @@ import os
 import pickle
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for, app
+    Blueprint, flash, g, redirect, render_template, request, url_for, app, jsonify
 )
 from werkzeug.exceptions import abort
 
@@ -32,6 +32,9 @@ def allowed_file(filename):
 @bp.route('/train', methods=('GET', 'POST'))
 @login_required
 def train():
+    response = {
+        "status": "failed"
+    }
     if request.method == 'POST':
         # check if the post request has the file part
         if 'train_file' not in request.files:
@@ -50,11 +53,13 @@ def train():
         path_name = os.path.join(folder_, filename)
         file.save(path_name)
         model_training.train.train_model(path_name)
-        flash('New model trained')
+        # flash('New model trained')
+        response.status = "success"
+        response.message = "New model trained"
 
         # return path_name
 
-    return render_template('mlmodel/index.html')
+    return jsonify(response)
 
 
 @bp.route('/evaluate', methods=('GET', 'POST'))
@@ -84,7 +89,8 @@ def evaluate():
         lsh = pickle.load(open("lsh.pkl", "rb"))
 
         messages = model_training.train.evaluate_file(path_name, model, index2word_set, mg, lsh)
-        return render_template('mlmodel/results.html', messages=messages)
+        # return render_template('mlmodel/results.html', messages=messages)
+        return jsonify(messages)
 
         # return path_name
 

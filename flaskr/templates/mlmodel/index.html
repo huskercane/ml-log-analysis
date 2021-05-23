@@ -1,16 +1,49 @@
 {% extends 'base.html' %}
 
-{% block header %}
-<h1>{% block title %}Analyze Logs{% endblock %}</h1>
-{% endblock %}
+{% block app_content %}
 
-{% block content %}
-<form action="/train" enctype="multipart/form-data" method="post">
-    <input type="file" id="train_file" name="train_file">
-    <input type="submit">
-</form>
-<form action="/evaluate" enctype="multipart/form-data" method="post">
-    <input type="file" id="evaluate_file" name="evaluate_file">
-    <input type="submit">
-</form>
+<script type="text/javascript" src="{{ url_for('static', filename='jquery-3.6.0.min.js') }}"></script>
+<script type="text/javascript"
+        src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.js"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='ml-bootstrap.js') }}"></script>
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link active" id="evaluate-tab" data-toggle="tab" href="#evaluate" role="tab"
+           aria-controls="evaluate"
+           aria-selected="true">Evaluate</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="train-tab" data-toggle="tab" href="#train" role="tab" aria-controls="train"
+           aria-selected="true">Train</a>
+    </li>
+</ul>
+
+<!-- Tab panes -->
+<div class="tab-content">
+
+    <div class="tab-pane fade show active" id="evaluate" role="tabpanel" aria-labelledby="evaluate-tab">
+        <div class="input-group mb-3">
+            <div class="custom-file">
+                <input id="fileupload" type="file" name="fileupload"/>
+                <input type="file" class="custom-file-input" id="inputGroupFile01" name="evaluate-file"/>
+                <label class="custom-file-label" for="inputGroupFile01">Choose file</label>
+            </div>
+            <div class="input-group-append">
+                <button onclick="uploadEvaluateFile()" class="input-group-text" id="e-button">Evaluate</button>
+            </div>
+        </div>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="train">
+        <div class="input-group mb-3">
+            <div class="custom-file">
+                <input type="file" class="custom-file-input" id="inputGroupFile02" name="train-file">
+                <label class="custom-file-label" for="inputGroupFile02">Choose file</label>
+            </div>
+            <div class="input-group-append">
+                <button onclick="uploadTrainFile()" class="input-group-text" id="t-button">Train</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="results"></div>
 {% endblock %}

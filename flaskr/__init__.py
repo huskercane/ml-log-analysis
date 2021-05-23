@@ -1,7 +1,7 @@
 import os
 
 from flask import Flask
-
+from flask_bootstrap import Bootstrap
 
 def create_app(test_config=None):
     # create and configure the app
@@ -45,5 +45,7 @@ def create_app(test_config=None):
 
     from . import model_training
     model_training.train.download()
+
+    bootstrap = Bootstrap(app)
 
     return app

@@ -152,23 +152,23 @@ def add_to_lshhash(key, prep, model, index2word_set, mg, lsh):
 
 def evaluate_file(file_path, model, index2word_set, mg, lsh):
     # comparing files
-    dfLog_test = convert_txt_to_dataframe(file_path)
-    messages = set()
+    df_log_test = convert_txt_to_dataframe(file_path)
+    messages = []
 
     import time
 
     start = time.time()
 
-    for index, row in dfLog_test.iterrows():
+    for index, row in df_log_test.iterrows():
+        test_vec = row['Message']
         try:
-            test_vec = row['Message']
             vec = avg_sentence_vector(data_cleaning(test_vec), model, 100, index2word_set)
             m = mg.minhash(vec)
             results = lsh.query(m)
             if len(results) == 0:
-                messages.add(row['Message'])
+                messages.append(test_vec)
         except:
-            messages.add(row['Message'])
+            messages.append("BAD:"+test_vec)
 
     end = time.time()
 
@@ -177,6 +177,6 @@ def evaluate_file(file_path, model, index2word_set, mg, lsh):
 
     print(messages)
 
-    dfLog_test.shape
+    df_log_test.shape
 
     return messages

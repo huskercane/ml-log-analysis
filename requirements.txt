@@ -9,3 +9,4 @@ datasketch~=1.5.3
 gensim~=4.0.1
 tqdm~=4.60.0
 setuptools~=56.2.0
+Flask-Bootstrap4~=4.0.2

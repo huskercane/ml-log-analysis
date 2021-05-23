@@ -1,16 +1,25 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Results{% endblock %}</h1>
+<h1>{% block title %}Results{% endblock %}</h1>
 {% endblock %}
 
-{% block content %}
-  {% for message in messages %}
-    <article class="post">
-      <p class="body">{{ message }}</p>
-    </article>
-    {% if not loop.last %}
-      <hr>
-    {% endif %}
-  {% endfor %}
+
+{% block app_content %}
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Message</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for idx, message in messages %}
+    <tr>
+        <th scope="row">idx</th>
+        <td>{{message}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
 {% endblock %}
