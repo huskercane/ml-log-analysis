@@ -32,7 +32,7 @@ def download():
 
 
 def convert_txt_to_dataframe(file_path):
-    dfLog = pd.DataFrame(
+    df_log = pd.DataFrame(
         columns=['timestamp', 'user.id', 'session.id', 'client.ip', 'push.info', 'transaction.id', 'LogLevel',
                  'Activity', 'Module', 'Message'])
     num_row = -1
@@ -58,18 +58,17 @@ def convert_txt_to_dataframe(file_path):
                     if len(after_split) > 1:
                         values.insert(i, after_split[1])
                 num_row += 1
-                dfLog.loc[num_row] = [timestamp, values[0], values[1], values[2], values[3], values[4], loglevel,
-                                      activity, module, message]
+                df_log.loc[num_row] = [timestamp, values[0], values[1], values[2], values[3], values[4], loglevel,
+                                       activity, module, message]
 
             elif num_row > -1:
                 try:
                     # message =content.strip('\n')
-                    dfLog.loc[num_row, 'Message'] += message
+                    df_log.loc[num_row, 'Message'] += message
                 except Exception as e:
                     root.error(e)
                     root.debug(content)
-                    root.debug(content)
-    return dfLog
+    return df_log
 
 
 def data_cleaning(content):
@@ -85,18 +84,18 @@ def data_cleaning(content):
     return filtered_sentence
 
 
-def train_model(filepaths):
-    dfLog = convert_txt_to_dataframe(filepaths)
-    dflog_msg = dfLog[['timestamp', 'LogLevel', 'Message']]
-    dflog_msg['Message'] = dflog_msg['Message'].apply(str)
-    dflog_msg.reset_index()
-    dflog_msg["uniquekey"] = dflog_msg["timestamp"] + " | " + dflog_msg["Message"]
+def train_model(file_path):
+    df_log = convert_txt_to_dataframe(file_path)
+    df_log_msg = df_log[['timestamp', 'LogLevel', 'Message']]
+    df_log_msg['Message'] = df_log_msg['Message'].apply(str)
+    df_log_msg.reset_index()
+    df_log_msg["uniquekey"] = df_log_msg["timestamp"] + " | " + df_log_msg["Message"]
 
-    dflog_msg['processed'] = dflog_msg['Message'].apply(data_cleaning)
+    df_log_msg['processed'] = df_log_msg['Message'].apply(data_cleaning)
 
     list_dat = []
     index2word_set = set()
-    for i in dflog_msg['processed']:
+    for i in df_log_msg['processed']:
         for k in i:
             list_dat.append(k)
             for f in k:
@@ -107,24 +106,23 @@ def train_model(filepaths):
     mg = WeightedMinHashGenerator(100, 128)
     lsh = MinHashLSH(threshold=0.5, num_perm=128)
 
-    dflog_msg[:].apply(lambda row: add_to_lshhash(
+    df_log_msg[:].apply(lambda row: add_to_lsh_hash(
         row['uniquekey'],
         row['processed'],
         model,
         index2word_set,
         mg,
         lsh),
-                       axis=1)
+                        axis=1)
 
-    df = dflog_msg.set_index('uniquekey')
+    df = df_log_msg.set_index('uniquekey')
 
     pickle.dump(model, open("model.pkl", "wb"))
     pickle.dump(index2word_set, open("index2word_set.pkl", "wb"))
     pickle.dump(mg, open("mg.pkl", "wb"))
     pickle.dump(lsh, open("lsh.pkl", "wb"))
-    # TODO log these
-    # df.shape
-    # df[df['Message'].str.contains('Get device')].shape
+    root.debug(df.shape)
+    root.debug(df[df['Message'].str.contains('Get device')].shape)
 
 
 def avg_sentence_vector(sentences, model, num_features, index2word_set):
@@ -133,18 +131,18 @@ def avg_sentence_vector(sentences, model, num_features, index2word_set):
 
     for sentence in sentences:
         feature_vec_in = np.zeros((num_features,), dtype="float32")
-        nwords = 0
+        number_of_words = 0
         for word in sentence:
             if word in index2word_set:
-                nwords = nwords + 1
+                number_of_words = number_of_words + 1
                 feature_vec_in = np.add(feature_vec_in, model.wv[word])
-        if nwords > 0:
-            feature_vec_in = np.divide(feature_vec_in, nwords)
+        if number_of_words > 0:
+            feature_vec_in = np.divide(feature_vec_in, number_of_words)
         feature_vec = feature_vec + feature_vec_in
     return feature_vec
 
 
-def add_to_lshhash(key, prep, model, index2word_set, mg, lsh):
+def add_to_lsh_hash(key, prep, model, index2word_set, mg, lsh):
     try:
         vec1 = avg_sentence_vector(prep, model, 100, index2word_set)
         m1 = mg.minhash(vec1)
@@ -177,9 +175,9 @@ def evaluate_file(file_path, model, index2word_set, mg, lsh):
 
     end = time.time()
 
-    root.info(str(int(end - start)) + ' Sec')
+    root.debug(str(int(end - start)) + ' Sec')
 
-    root.info(messages)
-    root.info(df_log_test.shape)
+    root.debug(messages)
+    root.debug(df_log_test.shape)
 
     return messages
