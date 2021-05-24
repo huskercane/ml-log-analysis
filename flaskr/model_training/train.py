@@ -1,3 +1,4 @@
+import logging
 import pickle
 import re
 
@@ -6,12 +7,13 @@ import numpy as np
 import pandas as pd
 from datasketch.lsh import MinHashLSH
 from datasketch.weighted_minhash import WeightedMinHashGenerator
+from flask.logging import default_handler
 from gensim.models import Word2Vec
 from nltk.corpus import stopwords
 
+root = logging.getLogger()
+root.addHandler(default_handler)
 stop_words = stopwords.words('english')
-
-# filepaths = [r'/home/rohits/Downloads/DebugLogFile.log.mod.noleak']
 
 tsPattern = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}"
 
@@ -63,8 +65,10 @@ def convert_txt_to_dataframe(file_path):
                 try:
                     # message =content.strip('\n')
                     dfLog.loc[num_row, 'Message'] += message
-                except:
-                    print(content)
+                except Exception as e:
+                    root.error(e)
+                    root.debug(content)
+                    root.debug(content)
     return dfLog
 
 
@@ -125,19 +129,19 @@ def train_model(filepaths):
 
 def avg_sentence_vector(sentences, model, num_features, index2word_set):
     # function to average all words vectors in a given paragraph
-    featureVec = np.zeros((num_features,), dtype="float32")
+    feature_vec = np.zeros((num_features,), dtype="float32")
 
     for sentence in sentences:
-        featureVecIn = np.zeros((num_features,), dtype="float32")
+        feature_vec_in = np.zeros((num_features,), dtype="float32")
         nwords = 0
         for word in sentence:
             if word in index2word_set:
                 nwords = nwords + 1
-                featureVecIn = np.add(featureVecIn, model.wv[word])
+                feature_vec_in = np.add(feature_vec_in, model.wv[word])
         if nwords > 0:
-            featureVecIn = np.divide(featureVecIn, nwords)
-        featureVec = featureVec + featureVecIn
-    return featureVec
+            feature_vec_in = np.divide(feature_vec_in, nwords)
+        feature_vec = feature_vec + feature_vec_in
+    return feature_vec
 
 
 def add_to_lshhash(key, prep, model, index2word_set, mg, lsh):
@@ -146,8 +150,8 @@ def add_to_lshhash(key, prep, model, index2word_set, mg, lsh):
         m1 = mg.minhash(vec1)
         if not lsh.__contains__(key):
             lsh.insert(key, m1)
-    except:
-        print('')
+    except Exception as e:
+        root.error(e)
 
 
 def evaluate_file(file_path, model, index2word_set, mg, lsh):
@@ -167,16 +171,15 @@ def evaluate_file(file_path, model, index2word_set, mg, lsh):
             results = lsh.query(m)
             if len(results) == 0:
                 messages.append(test_vec)
-        except:
-            messages.append("BAD:"+test_vec)
+        except Exception as e:
+            root.error(e)
+            messages.append("BAD:" + test_vec)
 
     end = time.time()
 
-    # TODO: use logger
-    print(str(int(end - start)) + ' Sec')
+    root.info(str(int(end - start)) + ' Sec')
 
-    print(messages)
-
-    df_log_test.shape
+    root.info(messages)
+    root.info(df_log_test.shape)
 
     return messages
