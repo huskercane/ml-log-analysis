@@ -18,8 +18,7 @@
                     <a class="nav-link active" aria-current="page" href="{{ url_for('index') }}">Home</a>
                 </li>
                 {% if g.user %}
-                <li class="nav-item">{{ g.user['username'] }}
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Log Out</a>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Log Out({{ g.user['username'] }})</a>
                     {% else %}
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.register') }}">Register</a>
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Log In</a>

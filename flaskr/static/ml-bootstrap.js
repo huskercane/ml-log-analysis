@@ -25,6 +25,7 @@ async function uploadEvaluateFile2() {
 }
 
 function uploadEvaluateFile() {
+    clearTable();
     uploadEvaluateFile2().then(messages => {
         let
             tableData = document.getElementById("results");
@@ -56,4 +57,11 @@ function uploadEvaluateFile() {
 
         tableData.innerHTML = table;
     });
+}
+
+function clearTable() {
+    let myNode = document.getElementById("results");
+    while (myNode.firstChild) {
+        myNode.removeChild(myNode.firstChild);
+    }
 }
