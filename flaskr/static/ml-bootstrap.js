@@ -3,12 +3,14 @@ $(document).ready(function () {
 })
 
 async function uploadTrainFile() {
+    $('#progressModal').modal('show');
     let formData = new FormData();
     formData.append("train_file", inputGroupFile02.files[0]);
     await fetch('/train', {
         method: "POST",
         body: formData
     });
+    $('#progressModal').modal('toggle');
     alert('The file has been uploaded successfully.');
 }
 
@@ -19,12 +21,12 @@ async function uploadEvaluateFile2() {
         method: "POST",
         body: formData
     });
-    const messages = await response.json();
-    return messages
+    return await response.json()
     // alert('The file has been uploaded successfully.');
 }
 
 function uploadEvaluateFile() {
+    $('#progressModal').modal('show');
     clearTable();
     uploadEvaluateFile2().then(messages => {
         let
@@ -56,6 +58,7 @@ function uploadEvaluateFile() {
         ;
 
         tableData.innerHTML = table;
+        $('#progressModal').modal('toggle');
     });
 }
 

@@ -56,6 +56,7 @@ def train():
         # flash('New model trained')
         response.status = "success"
         response.message = "New model trained"
+        os.remove(path_name)
 
         # return path_name
 
@@ -90,6 +91,7 @@ def evaluate():
 
         messages = model_training.train.evaluate_file(path_name, model, index2word_set, mg, lsh)
         # return render_template('mlmodel/results.html', messages=messages)
+        os.remove(path_name)
         return jsonify(messages)
 
         # return path_name
