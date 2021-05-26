@@ -15,15 +15,6 @@ root = logging.getLogger()
 root.addHandler(default_handler)
 stop_words = stopwords.words('english')
 
-tsPattern = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}"
-
-regex_for = {
-    "\d{4}(?:-\d{2}){2}T\d{2}:\d{2}:\d{2}.\d{3}\+\d{4}": 'DATE',
-    "\w{3,} \w{3,} \d{2} \d{2}:\d{2}:\d{2} \w{3,} \d{4}": 'DATE',
-    "\d+": 'X',
-    r'[^\w\s]': ' '
-}
-
 
 def download():
     nltk.download('punkt')
@@ -32,6 +23,8 @@ def download():
 
 
 def convert_txt_to_dataframe(file_path):
+    ts_pattern = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}"
+
     df_log = pd.DataFrame(
         columns=['timestamp', 'user.id', 'session.id', 'client.ip', 'push.info', 'transaction.id', 'LogLevel',
                  'Activity', 'Module', 'Message'])
@@ -39,7 +32,7 @@ def convert_txt_to_dataframe(file_path):
     with open(file_path, 'r') as f:
         contents = f.readlines()
         for content in contents:
-            if re.search(tsPattern, content) is not None:
+            if re.search(ts_pattern, content) is not None:
                 msg = content.split('|')
                 stripped = [s.strip() for s in msg]
                 timestamp = stripped[0]
@@ -72,7 +65,16 @@ def convert_txt_to_dataframe(file_path):
 
 
 def data_cleaning(content):
-    message = content.split('at')[0]
+    regex_for = {
+        "\d{4}(?:-\d{2}){2}T\d{2}:\d{2}:\d{2}.\d{3}\+\d{4}": 'DATE',
+        "\w{3,} \w{3,} \d{2} \d{2}:\d{2}:\d{2} \w{3,} \d{4}": 'DATE',
+        "\d+": 'X',
+        r'[^\w\s]': ' '
+    }
+
+    message = content
+    if ' at ' in content:
+        message = content.split('at')[0]
     for rex, replace_value in regex_for.items():
         message = re.sub(rex, replace_value, message)
     sentences = nltk.sent_tokenize(message)
